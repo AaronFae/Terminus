@@ -31,6 +31,10 @@ WesternForest.addItem(new Item("Sign",
     "Spell Casting Academy: The Elite School of Magic \
 Today Only: Free Introductory Lessons! Novices welcome!",
     "loc_forest.gif"));
+WesternForest.addItem(new Item("BackSign",
+    "If you ever want to go directly Home, just type 'cd ~' or just plain old `cd' \
+    and you'll come back Home. Getting back might be more difficult though.",
+    "loc_forest.gif"));
 
 //SPELL CASTING ACADEMY
 var SpellCastingAcademy = new Room("SpellCastingAcademy", 
@@ -499,6 +503,66 @@ little boy. Someone is there waiting for you.' \
 runs up the ominous path towards home.");
 Cage.addItem(KidnappedChild);
 
+//Athena cluster
+var AthenaCluster = new Room("AthenaCluster", "None shall pass without the combination. You\
+    have one chance to enter the combination. Enter password:");
+var Workstation = new Item("Workstation", "The Workstation has resources you can use to \
+    access files in a joint Athena locker. It adds new rooms (when they're in your Home we\
+    call them lockers) to your Home, and you can \
+    add them to your collection of lockers if you have permission. If you know what you want to add \
+    to your Home (the name of the locker you want, of course), just 'add LOCKERNAME'. It \
+    gives you extra spells (if you learn them), and gives you more Rooms to explore.")
+AthenaCluster.addItem(Workstation);
+AthenaCluster.removeCommand("ls");
+AthenaCluster.addCmdText("ls", "You must enter the Athena cluster combo first.");
+AthenaCluster.removeCommand("cd");
+AthenaCluster.addCmdText("cd", "None shall pass without the combination. You\
+    have one chance to enter the combination. Enter password:")
+AthenaCluster.ev.addListener("AthenaClusterExited", function(){
+    AthenaCluster.removeCommand("cd");
+});
+
+//MIT
+var MIT = new Room("MIT", "You have arrived by magic carpet to MIT!", "item_manuscript.gif");
+var AdmissionLetter = new Item("AdmissionLetter", "Congratulations on entering MIT! \
+    Here you will learn special spells that you can only use at MIT. Enjoy!", "item_manuscript.gif")
+MIT.addItem(AdmissionLetter);
+MIT.ev.addListener("tryEnterAthenaCluster", function(){
+    MIT.addCommand("terminus");
+    MIT.addCmdText("terminus", "You have correctly entered the cluster combo. Entering the AthenaCluster.");
+    AthenaCluster.removeCommand("ls");
+    AthenaCluster.addCmdText("ls", "You must enter the Athena cluster combo first.");
+    // AthenaCluster.removeCommand("cd");
+    // AthenaCluster.addCmdText("cd", "None shall pass without the combination. You\
+    // have one chance to enter the combination. Enter password:");
+});
+MIT.ev.addListener("AthenaComboEntered", function(){
+    AthenaCluster.addCommand("ls");
+    AthenaCluster.removeCmdText("ls");
+    AthenaCluster.addCommand("cd");
+    // AthenaCluster.addCmdText("cd", "You have correctly entered the cluster combo. You may enter.");
+    enterRoom(AthenaCluster);
+    MIT.removeCommand("terminus");
+    MIT.removeCmdText("terminus");
+});
+
+//StataCenter
+var StataCenter = new Room("StataCenter");
+var WaryEyeOfGradStudent = new Item("WaryEyeOfGradStudent", "If you so desire, you can add \
+    a new MagicLocker outside your Home. In this MagicLocker you can find some tools that \
+    will be useful in your time at MIT (and beyond). There you can find portals to \
+    other places, you can write notes, and you can store various items you collect in \
+    your travels in the MagicLocker. But first you need to go to the AthenaCluster and \
+    learn how.");
+StataCenter.addItem(WaryEyeOfGradStudent);
+var HelpfulTA = new Item("HelpfulTA", "Ah, welcome to the wonderful land of Stata.\
+    There's one room here that you'll need the combination for. All you have to do is ask:\
+    'tellme combo'.");
+StataCenter.addItem(HelpfulTA);
+
+//Magic locker
+var MagicLocker = new Room("MagicLocker")
+
 /**
 * LINKS BETWEEN ROOMS
 * Fulfill parent/child relationships between rooms
@@ -539,3 +603,8 @@ link_rooms(BrokenBridge, Clearing);
 link_rooms(Clearing, OminousPath);
 link_rooms(OminousPath, CaveOfTrolls);
 //link_rooms(CaveOfTrolls, Cave);
+
+//MIT level links
+link_rooms(Home, MIT);
+link_rooms(MIT, StataCenter);
+link_rooms(MIT, AthenaCluster);
