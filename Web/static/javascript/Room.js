@@ -24,6 +24,10 @@ Room.prototype.toString = function(){
 	return this.room_name;
 };
 
+Room.prototype.changeIntroText = function(new_text){
+	this.intro_text = new_text;
+};
+
 Room.prototype.addItem = function(newitem) {
 	if (typeof newitem != 'undefined'){
 		this.items[this.items.length] = newitem;
@@ -48,10 +52,25 @@ Room.prototype.itemStringArray = function(item){
 	return itemstrarray;
 };
 
+Room.prototype.childStringArray = function(child){
+	childstrarray = []
+	for (var i = 0; i < this.children.length; i++){
+		childstrarray[childstrarray.length] = this.children[i].toString();
+	}
+	return childstrarray;
+};
+
 Room.prototype.getItemFromName = function(itemname){
 	itemindex = this.itemStringArray().indexOf(itemname);
 	if (itemindex > -1)
 		return this.items[itemindex];
+	return -1;
+}
+
+Room.prototype.getChildFromName = function(childname){
+	childindex = this.childStringArray().indexOf(childname);
+	if (childindex > -1)
+		return this.children[childindex];
 	return -1;
 }
 
@@ -207,6 +226,9 @@ Room.prototype.less = function(args){
 		for (var i = 0; i < this.items.length; i++){
 			if (item === this.items[i].toString()){
                 $("#scene").attr("src",this.items[i].picturename); // Display image of item
+                if (this.room_name === "Library" && (item === "InconspicuousLever")){
+                	this.ev.fire("pullLever");
+                }
 				return this.items[i].cmd_text["less"];
 			}
 		}
@@ -245,9 +267,13 @@ Room.prototype.mv = function(args){
 	if (args.length != 2){
 		return "You need to move thing A to place B. Use mov [thingA] [placeB].";
 	} else {
-		if ((this.itemStringArray().indexOf(args[0]) >= 0) && (this.childrenStringArray().indexOf(args[1]) >= 0)){
+		var item_name_to_move = this.itemStringArray().indexOf(args[0]);
+		if ((item_name_to_move >= 0) && (this.childrenStringArray().indexOf(args[1]) >= 0)){
 			itemtoadd = this.items[this.itemStringArray().indexOf(args[0])];
 			this.children[this.childrenStringArray().indexOf(args[1])].addItem(itemtoadd);
+			if ((this.itemStringArray().indexOf(args[0]) === "UglyTroll") && (this.room_name === "CaveOfDisgruntledTrolls")){
+				this.ev.fire("openSlide");
+			}
 			this.removeItem(args[0]);
 			return "Moved " + args[0] + " to " + args[1] + ".";
 		} else {
@@ -265,6 +291,12 @@ Room.prototype.rm = function(args){
 			if (this.getItemFromName(args[i]) != -1){
 				if (this.getItemFromName(args[i]).valid_cmds.indexOf("rm") > 0){
 					var removedItem = this.removeItem(args[i]);
+					if (removedItem.itemname === "ThornyBrambles" && this.room_name === "OminousLookingPath"){
+						this.ev.fire("rmBrambles")
+					}
+					if (removedItem.itemname === "UglyTroll" && this.room_name === "CaveOfDisgruntledTrolls"){
+						this.ev.fire("openSlide");
+					}
 					if ("rm" in removedItem.cmd_text){
 						stringtoreturn += removedItem.cmd_text["rm"] + "\n";
 					} else {
@@ -282,6 +314,17 @@ Room.prototype.rm = function(args){
 };
 
 Room.prototype.grep = function(args){
+	if (this.commands.indexOf("grep") > 0){
+		var word_to_find = args[0];
+		if (this.getItemFromName(args[1]) != -1){
+			var item_to_find_in_text = this.getItemFromName(args[1]).cmd_text["less"];
+			var line_array = item_to_find_in_text.split("\n");
+			var return_arr = jQuery.grep(line_array, function(line){ return (line.indexOf(word_to_find) > 0)});
+			return return_arr.join("\n");
+		} else {
+			return "Not a valid item to search in.";
+		}
+	}
 	return "You haven't learned this spell yet.";
 };
 
@@ -294,9 +337,9 @@ Room.prototype.touch = function(args){
 			if (args[i].length > 0){
 				this.addItem(new Item(args[i], "This is a " + args[i]));
 				createdItemsString += args[i];
-				if (args[i] === "Plank"){
+				if (args[i] === "Plank" && this.room_name === "BrokenBridge"){
 					this.ev.fire("touchPlank");
-				} else if (args[i] === "Gear"){
+				} else if (args[i] === "Gear" && this.room_name === "ArtisanShop"){
 					this.ev.fire("touchGear");
 				}
 			}
@@ -322,9 +365,15 @@ Room.prototype.cp = function(args){
 			newItem.cmd_text = item_to_copy.cmd_text;
 			newItem.valid_cmds = item_to_copy.valid_cmds;
 			this.addItem(newItem);
-			if (new_item_name === "gear1" || new_item_name === "gear2" || new_item_name === "gear3" || new_item_name === "gear4" || new_item_name === "gear5"){
-				if (this.getItemFromName("gear1") != -1 && this.getItemFromName("gear2") != -1 && this.getItemFromName("gear3") != -1 && this.getItemFromName("gear4") != -1 && this.getItemFromName("gear5") != -1){
-					this.ev.fire("FiveGearsCopied");
+			if (this.room_name === "ArtisanShop"){
+				if (new_item_name === "gear1" || new_item_name === "gear2" || new_item_name === "gear3" || new_item_name === "gear4" || new_item_name === "gear5"){
+					if (this.getItemFromName("gear1") != -1 && this.getItemFromName("gear2") != -1 && this.getItemFromName("gear3") != -1 && this.getItemFromName("gear4") != -1 && this.getItemFromName("gear5") != -1){
+						this.ev.fire("FiveGearsCopied");
+					}
+				}
+			} else if (this.room_name === "Farm"){
+				if (item_to_copy_name === "EarOfCorn" && new_item_name === "AnotherEarOfCorn"){
+					this.ev.fire("CornCopied");
 				}
 			}
 			return "Just copied " + item_to_copy_name + " into " + new_item_name + ".";
@@ -338,11 +387,24 @@ Room.prototype.terminus = function(args){
 	var text_to_return = this.cmd_text["terminus"]
 	this.ev.fire("AthenaComboEntered");
 	return text_to_return;
-}
+};
 
 Room.prototype.tellme = function(args){
 	if (args[0] === "combo"){
 		return "The combination is 'terminus' (without the quotes).";
 	}
 	return "Incorrect syntax. Ask the OldMan for help.";
-}
+};
+
+Room.prototype.mkdir = function(args){
+	if (args.length === 1){
+		var room_name_to_make = args[0];
+		var new_room = new Room(args[0]);
+		link_rooms(this, new_room);
+		if (this.room_name === "Clearing" && room_name_to_make === "House"){
+			this.ev.fire("HouseMade");
+		}
+		return "New room " + args[0] + " created";
+	}
+	return "Incorrect syntax. Ask the OldMan for help.";
+};

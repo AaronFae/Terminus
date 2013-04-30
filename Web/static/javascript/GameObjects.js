@@ -293,11 +293,14 @@ Library.addItem(new Item("NostalgiaForHome",
 		//"...only the world-maker can stop the dark wizard's virus from...\n" +
 		//"...that the power of \"sudo\" may be the dark wizard's only weakness...\n"));
 //add lever back when items when events can be added to items
-//Library.addItem(new Item("InconspicuousLever", 
-//    "You spot an inconspicuous lever behind the shelves.  Curious, you pull it, \
-//and a panel slides open to reveal a secret back room.",
-//    "item_lever.gif"));
+Library.addItem(new Item("InconspicuousLever", 
+   "You spot an inconspicuous lever behind the shelves.  Curious, you pull it, \
+and a panel slides open to reveal a secret back room.",
+   "item_lever.gif"));
 Library.addCommand("grep");
+Library.ev.addListener("pullLever", function(){
+    link_rooms(Library, BackRoom);
+});
 
 //BACK ROOM
 var BackRoom = new Room("BackRoom", 
@@ -308,14 +311,18 @@ BackRoom.addItem(new Item("Grep",
     "The exceptionally ugly elf turns to you with a sour expression. \
 \"Greeeeeep,\" he says sullenly.",
     "grep.gif"));
+BackRoom.addItem(new Item("PracticeBook", 
+    "Sally picked a peck\nOf seashelled peppers.\nA seashore of pickled pickles\n\
+    did Peter and Sally pick."));
 var Librarian = new Item("Librarian", 
     "\"Hm? Oh, hello. I apologize for the mess, but I'm very busy \
 doing research on the dark wizard. Would you do me a favor? Go look up all \
 references to DarkWizard in the History of Terminus. My assistant Grep \
 can help you.\" \
 Grep eyes you balefully. \"Greeepp.\" \"To search the contents of the book, just type \
-\"grep PHRASE DOCUMENT\", where PHRASE is the phrase you want to search for, \
-and DOCUMENT is the name of the book you want to search.\"",
+\"grep PHRASE ITEM\", where PHRASE is the phrase you want to search for, \
+and ITEM is the name of the book you want to search. Try it with the PracticeBook here\
+- see if you can find the line with the word 'peppers' in it.\"",
     "item_librarian.gif");
 BackRoom.addItem(Librarian);
 BackRoom.addCommand("grep");
@@ -383,7 +390,6 @@ get started! Just call them gear1, gear2, gear3, gear4, and gear5, please.");
     ArtisanShop.addCommand("cp");
 });
 ArtisanShop.ev.addListener("FiveGearsCopied", function(){
-    console.log("FiveGearsCopied");
     Artisan.addCmdText("less", "Ha, finished already? I guess you learn fast. Well, thanks for your \
         assistance.");
 });
@@ -401,10 +407,13 @@ Farm.addItem(EarOfCorn);
 var Farmer = new Item("Farmer", 
     "\"Ruined! I'm ruined! Look at these crops... almost nothing \
 left! The wizard's minions were here last week... they destroyed everything. How \
-will I feed my 10 children with just one ear of corn? Can you help me? \"",
+will I feed my 3 children with just one ear of corn? I could really use AnotherEarOfCorn! \"",
     "item_farmer.gif");
 Farm.addItem(Farmer);
 Farm.addCommand("cp");
+Farm.ev.addListener("CornCopied", function(){
+    Farmer.addCmdText("less", "It’s a miracle! Thank you, friend. May the Admin bless you.");
+});
 
 //CLEARING
 var Clearing = new Room("Clearing", 
@@ -426,11 +435,16 @@ I don't trust you magicfolk. If you really are who you say you are, then prove y
 good intentions by making me a new House!\"",
     "item_man.gif");
 Clearing.addItem(CryingMan);
-var House = new Room("House", 
-    "You made this house for the man. How thoughtful of you!", 
-    "none.gif");
 Clearing.removeCommand("cd");
 Clearing.addCmdText("cd", "You can’t cross the bridge until you’ve replaced the missing Plank.");
+Clearing.addCommand("mkdir");
+Clearing.ev.addListener("HouseMade", function(){
+    Clearing.getChildFromName("House").addCmdText("cd", "You are entering the House that you made.");
+    Clearing.getChildFromName("House").addCmdText("ls", "You made this house for the man. How thoughtful of you!");
+    Clearing.removeCmdText("cd");
+    Clearing.changeIntroText("There's a small grassy clearing here, with a man sitting on a \
+stone and sobbing. Behind him is a pile of rubble. Behind him is a small white house.");
+});
 
 //BROKEN BRIDGE
 var BrokenBridge = new Room("BrokenBridge",
@@ -443,28 +457,105 @@ BrokenBridge.ev.addListener("touchPlank", function(){
     // link_rooms(BrokenBridge, Clearing);
     Clearing.addCommand("cd");
     Clearing.removeCmdText("cd");
+    BrokenBridge.removeCmdText("cd");
+    BrokenBridge.changeIntroText("A creaky rope bridges stretches across a chasm.");
 });
 		
 //OMINOUS-LOOKING PATH
-var OminousPath = new Room("OminousLookingPath", 
+var OminousLookingPath = new Room("OminousLookingPath", 
     "The path leads toward a dark cave. It's an ordinary cobblestone path, but for \
 some reason it fills you with a sense of dread.",
     "loc_path.gif");
-var Thornybrambles = new Item("ThornyBrambles", 
+var ThornyBrambles = new Item("ThornyBrambles", 
     "This thicket of brambles is covered with wicked-looking thorns. You \
-can't go around it, and you definitely aren't about to go through it.",
+can't go around it, and you definitely aren't about to go through it. And yet something\
+tells you that you really want to.",
     "item_brambles.gif");
-Thornybrambles.addCmdText("mv", 
+ThornyBrambles.addCmdText("mv",
     "You can't touch them because they are covered with thorns. Ouch!");
-Thornybrambles.addCmdText("rm", 
+ThornyBrambles.addCmdText("rm", 
     "You speak the words of the Remove spell and the brambles glimmer a \
-deep blue. The sparks rearrange themselves into a prompt: 'PASSWORD?'");
-OminousPath.addItem(Thornybrambles);
-OminousPath.addCommand("rm");
+deep blue. After fizzling for a minute, they disappear with a puff of smoke.");
+ThornyBrambles.addValidCmd("rm");
+OminousLookingPath.addItem(ThornyBrambles);
+OminousLookingPath.addCommand("rm");
+OminousLookingPath.ev.addListener("rmBrambles", function(){
+    link_rooms(OminousLookingPath, CaveOfDisgruntledTrolls) ;
+});
+
+//SLIDE
+var Slide = new Room("Slide", "The slides is long. At the end, you see the KernelFiles.");
+Slide.removeCommand("cd");
+Slide.addCmdText("cd", "You have to get past the UglyTroll first.");
+
+//KERNEL FILES
+var KernelFiles = new Room("KernelFiles", "The KernelFiles hold the sudo-secret (no, not\
+    pseudo). You'd better read the Instructions.")
+var Instructions = new Item("Instructions", "You've learned how to make use of your friend grep I see.\
+    If you haven't it might be wise for you to go back to the Library again to do some reading.\
+    Because here, you'll need to use him to help you. Here is your task: \n\
+    There are a lot of KernelFiles and one of them contains the sudo password. This\
+    password is very powerful password that lets you do absolutely anything in the world.\
+    You know the password is contained in one of these .txt items. You know that it appears\
+    on a line that says the word: 'password='. Once you find it, all you need to do is type\
+    'sudo su' and you will be prompted for a password. Type the password, and you will have\
+    truly found Paradise.");
+var L_txt = new Item("L_txt", "INSERT SOME LONG TEXT");
+var M_txt = new Item("M_txt", "INSERT SOME LONG TEXT");
+var N_txt = new Item("N_txt", "INSERT SOME LONG TEXT");
+var O_txt = new Item("O_txt", "INSERT SOME LONG TEXT");
+var P_txt = new Item("P_txt", "INSERT SOME LONG TEXT");
+var Q_txt = new Item("Q_txt", "INSERT SOME LONG TEXT");
+var R_txt = new Item("R_txt", "INSERT SOME LONG TEXT");
+var S_txt = new Item("S_txt", "INSERT SOME LONG TEXT");
+var T_txt = new Item("T_txt", "INSERT SOME LONG TEXT");
+var U_txt = new Item("U_txt", "INSERT SOME LONG TEXT\npassword=IHTFP");
+var V_txt = new Item("V_txt", "INSERT SOME LONG TEXT");
+var W_txt = new Item("W_txt", "INSERT SOME LONG TEXT");
+var X_txt = new Item("X_txt", "INSERT SOME LONG TEXT");
+var Y_txt = new Item("Y_txt", "INSERT SOME LONG TEXT");
+var Z_txt = new Item("Z_txt", "INSERT SOME LONG TEXT");
+var AA_txt = new Item("AA_txt", "INSERT SOME LONG TEXT");
+var BB_txt = new Item("BB_txt", "INSERT SOME LONG TEXT");
+var CC_txt = new Item("CC_txt", "INSERT SOME LONG TEXT");
+var DD_txt = new Item("DD_txt", "INSERT SOME LONG TEXT");
+var EE_txt = new Item("EE_txt", "INSERT SOME LONG TEXT");
+var FF_txt = new Item("FF_txt", "INSERT SOME LONG TEXT");
+KernelFiles.addItem(L_txt);
+KernelFiles.addItem(M_txt);
+KernelFiles.addItem(N_txt);
+KernelFiles.addItem(O_txt);
+KernelFiles.addItem(P_txt);
+KernelFiles.addItem(Q_txt);
+KernelFiles.addItem(R_txt);
+KernelFiles.addItem(S_txt);
+KernelFiles.addItem(T_txt);
+KernelFiles.addItem(U_txt);
+KernelFiles.addItem(V_txt);
+KernelFiles.addItem(W_txt);
+KernelFiles.addItem(X_txt);
+KernelFiles.addItem(Y_txt);
+KernelFiles.addItem(Z_txt);
+KernelFiles.addItem(AA_txt);
+KernelFiles.addItem(BB_txt);
+KernelFiles.addItem(CC_txt);
+KernelFiles.addItem(DD_txt);
+KernelFiles.addItem(EE_txt);
+KernelFiles.addItem(FF_txt);
+KernelFiles.addItem(Instructions);
+KernelFiles.addCommand("sudo");
+KernelFiles.addCommand("grep");
+KernelFiles.ev.addListener("sudoComplete", function(){
+    link_rooms(KernelFiles, Paradise);
+    enterRoom(Paradise);
+});
+
+//PARADISE (end game screen)
+var Paradise = new Room("Paradise", "You have truly found Paradise with the sudo password. Congratulations.");
 
 //CAVE
 //Room beforeCave = new Room("CaveOfDisgruntledTrolls", "A patch of thorny brambles is growing at the mouth of the cave, blocking your way.", "loc_cave");
-var CaveOfTrolls = new Room("CaveOfDisgruntledTrolls", 
+var CaveOfDisgruntledTrolls = new Room("CaveOfDisgruntledTrolls", 
     "The cave is dark and smells like... feet? Oh, right, it's probably the trolls. \
 There's a scared-looking kid in a cage by the far wall.",
     "loc_cave.gif");
@@ -473,15 +564,26 @@ var UglyTroll = new Item("UglyTroll",
     "item_troll1.gif");
 UglyTroll.addCmdText("rm",
     "The troll looks briefy surprised, then vanishes with an unpleasant squelching sound.");
-Boulder.addValidCmd("rm");
-CaveOfTrolls.addItem(UglyTroll);
+UglyTroll.addValidCmd("rm");
+UglyTroll.addValidCmd("mv");
+UglyTroll.addCmdText("mv", "The troll looks briefly surprised, then moves away. He's mostly\
+    harmless anyway.")
+UglyTroll.addValidCmd("cp");
+UglyTroll.addCmdText("cp", "They're multiplying!");
+CaveOfDisgruntledTrolls.addItem(UglyTroll);
 //beforeCave.addItem(uglyTroll);
-var UglierTroll = new Item("UglierTroll", 
-    "He looks mad, and really, really ugly.",
+var UglierTroll = new Item("UglierTroll", "He looks mad, and really, really ugly. \
+    But he wants to tell you something. Between his\
+    garbled grunts, you manage to understand the following:\
+    You can cast spells on items that you don't currently see. For example, if you want\
+    to copy an item from this room to the OminousLookingPath from which you came, you can\
+    cp [ITEM_TO_COPY] ../[NEW_ITEM_NAME]. You can do this for most spells and most rooms. \
+    Use this knowledge wisely. Remember.... you can't undo an 'rm' spell.",
     "item_troll2.gif");
+UglierTroll.addValidCmd("rm");
 UglierTroll.addCmdText("rm",
     "The troll looks briefy surprised, then vanishes with an unpleasant squelching sound.");
-CaveOfTrolls.addItem(UglierTroll);
+CaveOfDisgruntledTrolls.addItem(UglierTroll);
 //beforeCave.addItem(uglierTroll);
 /*hideousTroll = new MoveableItem("AbsolutelyHideousTroll", "You probably don't want to look at this guy. Oops, too late. \n", "item_supertroll");
 hideousTroll.setRMText("The troll belches spectacularly, and you could swear he actually smirks. \n" +
@@ -493,14 +595,21 @@ var HideousTroll = new Item("AbsolutelyHideousTroll",
     "item_supertroll.gif");
 HideousTroll.addCmdText("rm", 
     "The troll belches spectacularly, and you could swear he actually smirks. \
-You won't get rid of him that easily, not without the PASSWORD.");
+You won't get rid of him that easily, not without the 'sudo password'. It's not\
+'pseudo', it's 'sudo'. You'll find that in KernelFiles. But first you have to\
+get past the UglyTroll to the Slide.");
 HideousTroll.addCmdText("mv", 
     "If you move him out of the cave, he'll terrorize \
 the countryside. Also he will probably eat you.");
-CaveOfTrolls.addItem(HideousTroll);
+CaveOfDisgruntledTrolls.addItem(HideousTroll);
 //beforeCave.addItem(hideousTroll);
-CaveOfTrolls.addCommand("rm");
-CaveOfTrolls.addCommand("mv");
+CaveOfDisgruntledTrolls.addCommand("rm");
+CaveOfDisgruntledTrolls.addCommand("mv");
+CaveOfDisgruntledTrolls.addCommand("cp");
+CaveOfDisgruntledTrolls.ev.addListener("openSlide", function(){
+    Slide.addCommand("cd");
+    Slide.addCmdText("cd", "It's just a Slide. Keep going. You're almost at the KernelFiles.");
+});
 
 //CAGE
 var Cage = new Room("Cage", 
@@ -510,6 +619,9 @@ var KidnappedChild = new Item("KidnappedChild",
     "You know it's kind of mean, but you can't help but think that that is one \
 funny-looking kid.",
     "item_cagedboy.gif");
+Cage.removeCommand("cd");
+Cage.addCmdText("cd", "You can’t squeeze through the bars. Anyway, are you crazy? \
+    Why would you want to go into a cage?");
 KidnappedChild.addCmdText("mv", 
     "The kid looks around, dazed, surprised to find himself out of the cage. \
 You smile at him and speak in a gentle voice. 'You should probably be getting home, \
@@ -618,9 +730,11 @@ link_rooms(TownSquare, BrokenBridge);
 //link(library, backRoom); 
 // link_rooms(RockyPath, Farm);
 link_rooms(BrokenBridge, Clearing);
-link_rooms(Clearing, OminousPath);
-link_rooms(OminousPath, CaveOfTrolls);
-//link_rooms(CaveOfTrolls, Cave);
+link_rooms(Clearing, OminousLookingPath);
+// link_rooms(OminousLookingPath, CaveOfDisgruntledTrolls) ;
+link_rooms(CaveOfDisgruntledTrolls, Cage);
+link_rooms(Slide, KernelFiles);
+link_rooms(CaveOfDisgruntledTrolls, Slide);
 
 //MIT level links
 link_rooms(Home, MIT);
