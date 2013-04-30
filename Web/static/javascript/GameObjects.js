@@ -372,6 +372,21 @@ Now make me a Gear! Then come back.\"",
     "item_artisan.gif");
 ArtisanShop.addItem(Artisan);
 ArtisanShop.addCommand("touch");
+ArtisanShop.ev.addListener("touchGear", function(){
+    Artisan.addCmdText("less", "Well that’s lovely, thank you, but you can’t expect me to make\
+anything with just one gear! Can’t you copy it?\n\
+...\n\
+*sigh* I can see you are going to need a lot of training. Just say “cp [ITEM] [NEWITEM]”.\
+[ITEM]’s the name of the item that you want copy, and [NEWITEM]’s the new name of the\
+copy, got it? Then poof! You’ll have shiny new item. I need five more gears so you’d better\
+get started! Just call them gear1, gear2, gear3, gear4, and gear5, please.");
+    ArtisanShop.addCommand("cp");
+});
+ArtisanShop.ev.addListener("FiveGearsCopied", function(){
+    console.log("FiveGearsCopied");
+    Artisan.addCmdText("less", "Ha, finished already? I guess you learn fast. Well, thanks for your \
+        assistance.");
+});
 
 //FARM
 var Farm = new Room("Farm",
@@ -521,6 +536,7 @@ AthenaCluster.addCmdText("cd", "None shall pass without the combination. You\
 AthenaCluster.ev.addListener("AthenaClusterExited", function(){
     AthenaCluster.removeCommand("cd");
 });
+AthenaCluster.addCommand("tellme");
 
 //MIT
 var MIT = new Room("MIT", "You have arrived by magic carpet to MIT!", "item_manuscript.gif");
@@ -545,6 +561,7 @@ MIT.ev.addListener("AthenaComboEntered", function(){
     MIT.removeCommand("terminus");
     MIT.removeCmdText("terminus");
 });
+MIT.addCommand("tellme");
 
 //StataCenter
 var StataCenter = new Room("StataCenter");
@@ -559,6 +576,7 @@ var HelpfulTA = new Item("HelpfulTA", "Ah, welcome to the wonderful land of Stat
     There's one room here that you'll need the combination for. All you have to do is ask:\
     'tellme combo'.");
 StataCenter.addItem(HelpfulTA);
+StataCenter.addCommand("tellme");
 
 //Magic locker
 var MagicLocker = new Room("MagicLocker")

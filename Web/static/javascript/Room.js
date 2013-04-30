@@ -296,19 +296,41 @@ Room.prototype.touch = function(args){
 				createdItemsString += args[i];
 				if (args[i] === "Plank"){
 					this.ev.fire("touchPlank");
+				} else if (args[i] === "Gear"){
+					this.ev.fire("touchGear");
 				}
 			}
 		};
 		if (createdItemsString === ""){
 			return "You haven't touched anything. Check your syntax.";
-		} else {
-			return "You have just created " + createdItemsString;
 		}
+		return "You have just created " + createdItemsString;
 	}
 	return "You haven't learned this spell yet.";
 };
 
 Room.prototype.cp = function(args){
+	if (args.length != 2){
+		return "Incorrect syntax. Ask the OldMan for help.";
+	} else {
+		var item_to_copy_name = args[0];
+		var new_item_name = args[1];
+		var item_to_copy = this.getItemFromName(item_to_copy_name);
+		if (item_to_copy != -1){
+			var newItem = new Item(new_item_name);
+			newItem.picturename = item_to_copy.picturename;
+			newItem.cmd_text = item_to_copy.cmd_text;
+			newItem.valid_cmds = item_to_copy.valid_cmds;
+			this.addItem(newItem);
+			if (new_item_name === "gear1" || new_item_name === "gear2" || new_item_name === "gear3" || new_item_name === "gear4" || new_item_name === "gear5"){
+				if (this.getItemFromName("gear1") != -1 && this.getItemFromName("gear2") != -1 && this.getItemFromName("gear3") != -1 && this.getItemFromName("gear4") != -1 && this.getItemFromName("gear5") != -1){
+					this.ev.fire("FiveGearsCopied");
+				}
+			}
+			return "Just copied " + item_to_copy_name + " into " + new_item_name + ".";
+		}
+		return "No item of that name to copy."
+	}
 	return "You haven't learned this spell yet.";
 };
 
@@ -316,4 +338,11 @@ Room.prototype.terminus = function(args){
 	var text_to_return = this.cmd_text["terminus"]
 	this.ev.fire("AthenaComboEntered");
 	return text_to_return;
+}
+
+Room.prototype.tellme = function(args){
+	if (args[0] === "combo"){
+		return "The combination is 'terminus' (without the quotes).";
+	}
+	return "Incorrect syntax. Ask the OldMan for help.";
 }
