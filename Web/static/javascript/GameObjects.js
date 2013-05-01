@@ -100,11 +100,12 @@ cave is an old man.",
     "loc_mountains.gif");
 EasternMountains.addItem(new Item("OldMan", 
     "You speak with the old man. He greets \
-you warmly as if you were old friends. You feel at ease with him. Hello \
-adventurer! Top of the morning to you! You seem like a young and energetic \
+you warmly as if you were old friends. You feel at ease with him. \n\
+\"Hello adventurer! Top of the morning to you! You seem like a young and energetic \
 explorer. If you're brave enough, your destiny awaits within this cave. That \
 destiny will manifest itself as a portal. Enter this portal and begin the next \
-chapter of your life. The old man sees the shock on your face and smiles \
+chapter of your life.\"\n\
+The old man sees the shock on your face and smiles a \
 comforting smile, \"I am but a fragile old man, and cannot accompany you through \
 this cave, but what I can provide are a few simple spells that will help you \
 along your way. Just read my old manuscripts and tryout those spells.\"", 
@@ -166,7 +167,7 @@ var SmallHole = new Room("SmallHole",
 There's no real reason to go into the hole.",
     "none.gif");
 SmallHole.addCmdText("cd", 
-    "There's nothing exciting in the small hole, and it's pretty dirty. There's no real reason to go into the hole. I suggest going back out.");
+    "There's nothing exciting in the small hole, and it's pretty dirty. I suggest going back out.");
 //add event handler to the "addItem" method of SmallHole to cause the rest of the level to be connected
 DankRoom.ev.addListener("mvBoulder", function(){
 	// link_rooms(DankRoom, Tunnel);
@@ -216,7 +217,7 @@ coast.  You should be careful!\"",
 TownSquare.addItem(new Item("RandomCitizen2", 
     "The man looks up from his newspaper when he notices you staring. \
 \"Have you read this?\" he exclaims, shaking the latest edition of \"The Last \
-Word\" in your face. \"It says here the wizard's corruption has spread as far\
+Word\" in your face. \"It says here the wizard's corruption has spread as far \
 as Oston to the south, and New Console is completely unrecoverable! These are \
 dangerous times,\" he mutters, shaking his head and turning back to his reading.",
     "item_citizen2.gif"));
@@ -284,7 +285,11 @@ fingers in his strong hands and brought them to rest upon his swollen— You clo
 book, disinterested, and place it back on the shelf.",
     "item_romancenovel.gif"));
 Library.addItem(new Item("HistoryOfTerminus", 
-    "It looks like an interesting book, but it's way too long and the print is too tiny.",
+    "It looks like an interesting book, but it's way too long and the print is too tiny. \
+Here is an excerpt:\n \
+DarkWizard', '...old tales tell of a DarkWizard who will fragment the land...\n \
+...only the world-maker can stop the DarkWizard's virus from...\n\
+...that the power of \"sudo\" may be the DarkWizard's only weakness...\n",
     "item_historybook.gif"));
 Library.addItem(new Item("NostalgiaForHome", 
     "If you ever get lonely for Home, just 'cd ~' and you'll go back there. \
