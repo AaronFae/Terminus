@@ -129,8 +129,8 @@ $(document).ready(function() {
             
             //Get starting room
             var search_room;
-            if(last_arg.substring(0,1) == "~/"){
-                search_room = Home;
+            if(last_arg.substring(0,1) == "~"){
+                search_room = jQuery.extend(true, {}, Home);
             }
             else{
                 search_room = jQuery.extend(true, {}, current_room);
@@ -158,7 +158,7 @@ $(document).ready(function() {
                             first_arg == "less")
                         {
                             for(child_num = 0; child_num<search_room.children.length; child_num++){
-                                if(search_room.children[child_num].room_name.match(path_rooms[room_num])){
+                                if(search_room.children[child_num].room_name.match("^"+path_rooms[room_num])){
                                     substring_matches.push(search_room.children[child_num].room_name);
                                 }
                             }
@@ -169,10 +169,11 @@ $(document).ready(function() {
                             first_arg == "mv" ||
                             first_arg == "less" ||
                             first_arg == "grep" ||
-                            first_arg == "touch")
+                            first_arg == "touch" ||
+                            first_arg == "rm")
                         {
                             for(item_num = 0; item_num<search_room.items.length; item_num++){
-                                if(search_room.items[item_num].itemname.match(path_rooms[room_num])){
+                                if(search_room.items[item_num].itemname.match("^"+path_rooms[room_num])){
                                     substring_matches.push(search_room.items[item_num].itemname);
                                 }
                             }
